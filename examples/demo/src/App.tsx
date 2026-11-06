@@ -364,7 +364,7 @@ function Closing() {
       <div className="closing-grid">
         <figure>
           <img src="samples/img/lupton-8296.jpg" width={1400} height={1044} loading="lazy" alt="Engraving of the Eddystone Lighthouse in a rough sea" />
-          <figcaption>The Eddystone Lighthouse, engraving by Thomas Goff Lupton. It is the lighthouse in the samples above.</figcaption>
+          <figcaption>The Eddystone Lighthouse, engraving by Thomas Goff Lupton. The article sample tells its story.</figcaption>
         </figure>
         <div>
           <h2>Install it in one line</h2>
