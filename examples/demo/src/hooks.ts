@@ -18,6 +18,22 @@ export function useMeasured<T extends HTMLElement>(): [RefObject<T | null>, { wi
   return [ref, size];
 }
 
+/** Calls back whenever the element enters or leaves the viewport. */
+export function useInView<T extends HTMLElement>(onChange: (visible: boolean) => void): RefObject<T | null> {
+  const ref = useRef<T>(null);
+  const callback = useRef(onChange);
+  callback.current = onChange;
+
+  useEffect(() => {
+    if (!ref.current) return;
+    const observer = new IntersectionObserver(([entry]) => callback.current(entry.isIntersecting), { threshold: 0.2 });
+    observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+
+  return ref;
+}
+
 /** Adds `is-in` once the element scrolls into view. Without script the content simply stays visible. */
 export function useReveal<T extends HTMLElement>(): RefObject<T | null> {
   const ref = useRef<T>(null);
@@ -45,23 +61,23 @@ export function useReveal<T extends HTMLElement>(): RefObject<T | null> {
 export interface LoggedMessage {
   id: number;
   height: number;
-  at: number;
 }
 
-/** Every `iframe-resize` message this page receives. */
-export function useResizeLog(limit: number): LoggedMessage[] {
+/** The latest `iframe-resize` messages sent by frames inside `scope`. */
+export function useResizeLog(scope: RefObject<HTMLElement | null>, limit: number): LoggedMessage[] {
   const [log, setLog] = useState<LoggedMessage[]>([]);
 
   useEffect(() => {
     let id = 0;
     const handle = (event: MessageEvent) => {
       if (event.data?.type !== 'iframe-resize' || typeof event.data.height !== 'number') return;
-      const entry = { id: ++id, height: event.data.height, at: Math.round(performance.now()) };
+      if (event.source !== scope.current?.querySelector('iframe')?.contentWindow) return;
+      const entry = { id: ++id, height: event.data.height };
       setLog((current) => [entry, ...current].slice(0, limit));
     };
     window.addEventListener('message', handle);
     return () => window.removeEventListener('message', handle);
-  }, [limit]);
+  }, [scope, limit]);
 
   return log;
 }

@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Visiting questions</title>
+    <style>
+      body { margin: 0; padding: 20px; background: #fff7df; color: #1d1a10; font: 17px/1.5 system-ui, sans-serif; }
+      h1 { margin: 0 0 14px; font-size: 24px; }
+      details { margin-bottom: 6px; background: #ffe9a8; }
+      details[open] { background: #ffc933; }
+      summary { min-height: 48px; padding: 12px 16px; font-weight: 600; cursor: pointer; }
+      p { margin: 0; padding: 0 16px 14px; }
+    </style>
+  </head>
+  <body>
+    <h1>Open any question</h1>
+    <details><summary>Why does the frame grow when I click?</summary><p>Opening this answer makes the page taller. The script in the page sees that and tells the parent, which sets the new height. Nothing in the parent knows about this accordion.</p></details>
+    <details><summary>Does it shrink when I close it?</summary><p>Yes. The height comes from the content, not from the frame, so a shorter page gets a shorter frame.</p></details>
+    <details><summary>Does the parent page need any code for this?</summary><p>Only the component. The accordion, the chat and the form on this site are ordinary pages that know nothing about embed-react.</p></details>
+    <details><summary>What about pages on other sites?</summary><p>Those load through a small proxy route on your server, which adds the same script. Without it the frame keeps its first height and scrolls.</p></details>
+  </body>
+</html>

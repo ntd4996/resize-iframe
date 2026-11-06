@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Build a lighthouse</title>
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; overflow-x: hidden; background: #123c52; color: #fff; font: 500 16px/1.3 system-ui, sans-serif; text-align: center; }
+      .controls { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; padding: 20px 12px 8px; }
+      button { min-height: 44px; padding: 0 18px; border: 0; background: #ffc933; color: #0a0a0a; font: inherit; cursor: pointer; transition: transform 0.12s; }
+      button:hover { background: #ffd964; }
+      button:active { transform: scale(0.95); }
+      button.quiet { background: #1d5570; color: #fff; }
+      button.quiet:hover { background: #276a8b; }
+      button:disabled { opacity: 0.45; cursor: default; }
+      output { min-width: 5.5em; font-variant-numeric: tabular-nums; }
+      .tower { --w: clamp(84px, 20vw, 170px); display: flex; flex-direction: column; align-items: center; padding-top: 24px; }
+      .lamp { position: relative; display: flex; flex-direction: column; align-items: center; }
+      .roof { width: 0; height: 0; border: solid transparent; border-width: 0 calc(var(--w) * 0.3) calc(var(--w) * 0.22); border-bottom-color: #c8322b; }
+      .glass { position: relative; z-index: 1; width: calc(var(--w) * 0.42); height: calc(var(--w) * 0.34); background: #ffc933; animation: glow 2.4s ease-in-out infinite alternate; }
+      .glass::before, .glass::after { content: ''; position: absolute; top: 0; bottom: 0; width: 8%; background: #0a0a0a; }
+      .glass::before { left: 30%; }
+      .glass::after { right: 30%; }
+      @keyframes glow { to { background: #fff3c4; } }
+      .gallery { position: relative; z-index: 1; width: calc(var(--w) * 0.86); height: calc(var(--w) * 0.08); background: #0a0a0a; }
+      .beam { position: absolute; top: calc(var(--w) * -0.61); height: calc(var(--w) * 2); width: 100vw; pointer-events: none; background: #ffc933; animation: sweep 2.4s ease-in-out infinite alternate; }
+      .beam.left { right: 50%; clip-path: polygon(0 0, 100% 44%, 100% 56%, 0 100%); }
+      .beam.right { left: 50%; clip-path: polygon(0 44%, 100% 0, 100% 100%, 0 56%); }
+      @keyframes sweep { from { opacity: 0.06; } to { opacity: 0.2; } }
+      .floor { position: relative; width: var(--w); height: calc(var(--w) * 0.42); background: #fff; }
+      .floor:nth-child(even) { background: #c8322b; }
+      .floor i { position: absolute; left: 50%; top: 26%; width: 16%; height: 48%; margin-left: -8%; background: #123c52; }
+      .floor.new i, .floor.new { animation: drop 0.28s cubic-bezier(0.16, 1, 0.3, 1); }
+      @keyframes drop { from { opacity: 0; translate: 0 -12px; } }
+      .rock { width: calc(var(--w) * 2.2); height: calc(var(--w) * 0.3); background: #34312c; clip-path: polygon(8% 100%, 18% 20%, 32% 0, 68% 0, 84% 25%, 94% 100%); }
+      .sea { height: 72px; margin-top: -14px; background: #0c2b3c; position: relative; }
+      .sea p { margin: 0; padding-top: 30px; color: #9cc0d2; font-weight: 400; font-size: 14px; }
+      @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+    </style>
+  </head>
+  <body>
+    <div class="controls">
+      <button type="button" id="add">Add a floor</button>
+      <button type="button" id="remove" class="quiet">Remove one</button>
+      <output id="count"></output>
+    </div>
+    <div class="tower">
+      <div class="lamp">
+        <div class="roof"></div>
+        <div class="glass"></div>
+        <div class="gallery"></div>
+        <div class="beam left"></div>
+        <div class="beam right"></div>
+      </div>
+      <div id="floors" style="display: contents"></div>
+      <div class="rock"></div>
+    </div>
+    <div class="sea"><p>This page is as tall as the lighthouse in it.</p></div>
+    <script>
+      var MAX = 40;
+      var floors = document.getElementById('floors');
+      var count = document.getElementById('count');
+      var add = document.getElementById('add');
+      var remove = document.getElementById('remove');
+      function refresh() {
+        var n = floors.children.length;
+        count.textContent = n + (n === 1 ? ' floor' : ' floors');
+        add.disabled = n >= MAX;
+        remove.disabled = n <= 1;
+      }
+      function addFloor(animate) {
+        if (floors.children.length >= MAX) return;
+        var floor = document.createElement('div');
+        floor.className = animate ? 'floor new' : 'floor';
+        floor.appendChild(document.createElement('i'));
+        floors.insertBefore(floor, floors.firstChild);
+        refresh();
+      }
+      add.onclick = function () { addFloor(true); };
+      remove.onclick = function () { floors.removeChild(floors.firstChild); refresh(); };
+      addFloor(false);
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        addFloor(false); addFloor(false); addFloor(false);
+      } else {
+        var built = 1;
+        var timer = setInterval(function () {
+          addFloor(true);
+          if (++built >= 5) clearInterval(timer);
+        }, 450);
+      }
+    </script>
+  </body>
+</html>
