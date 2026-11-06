@@ -164,7 +164,7 @@ function Follow() {
         <h2>It follows the page as it changes</h2>
         <p className="section-lead">
           The script in the frame watches the page and reports whenever its height moves, so nothing polls. These
-          switches change the article on the right.
+          switches change the article in the frame.
         </p>
         <ul className="switches">
           {CHANGES.map((change) => (
