@@ -7,6 +7,8 @@
 
 A React iframe that takes the height of the page inside it, so embedded content never gets its own scrollbar or a block of empty space below it.
 
+**[Try the live demo](https://ntd4996.github.io/resize-iframe/)**
+
 Links to X, Instagram, Facebook, TikTok, YouTube and LinkedIn render with the provider's own embed. Any other page loads through a small proxy route that you add to your Next.js app.
 
 ## Contents

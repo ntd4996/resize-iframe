@@ -18,6 +18,18 @@ export const RESIZE_SCRIPT = `(function () {
     return parseFloat(value) || 0;
   }
 
+  // A last child's bottom margin can collapse through its parent and stick out below the parent's box.
+  function trailingMargin(element) {
+    var style = getComputedStyle(element);
+    var margin = px(style.marginBottom);
+    if (px(style.paddingBottom) || px(style.borderBottomWidth) || style.overflow !== 'visible') return margin;
+    for (var child = element.lastElementChild; child; child = child.previousElementSibling) {
+      var display = getComputedStyle(child).display;
+      if (display !== 'none') return Math.max(margin, trailingMargin(child));
+    }
+    return margin;
+  }
+
   function measure() {
     var body = document.body;
     if (!body) return 0;
@@ -29,7 +41,7 @@ export const RESIZE_SCRIPT = `(function () {
       if (node.nodeType === 1) {
         var style = getComputedStyle(node);
         if (style.position === 'fixed' || style.display === 'none') continue;
-        edge = node.getBoundingClientRect().bottom + px(style.marginBottom);
+        edge = node.getBoundingClientRect().bottom + trailingMargin(node);
       } else if (node.nodeType === 3 && node.nodeValue.trim()) {
         range.selectNode(node);
         edge = range.getBoundingClientRect().bottom;
