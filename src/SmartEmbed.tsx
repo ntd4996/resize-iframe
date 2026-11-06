@@ -4,14 +4,14 @@ import {
   InstagramEmbed,
   LinkedInEmbed,
   TikTokEmbed,
-  TwitterEmbed,
   YouTubeEmbed,
 } from 'react-social-media-embed';
 import AutoIframe, { type AutoIframeProps } from './AutoIframe';
 import { detectSocialProvider, toCssSize, type SocialProvider } from './url';
+import XEmbed from './XEmbed';
 
 const SOCIAL_EMBEDS: Record<SocialProvider, ComponentType<{ url: string; width?: string | number }>> = {
-  twitter: TwitterEmbed,
+  twitter: XEmbed,
   instagram: InstagramEmbed,
   facebook: FacebookEmbed,
   tiktok: TikTokEmbed,

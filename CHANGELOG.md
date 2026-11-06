@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.6.1 - Unreleased
+
+### Fixed
+
+- X links crashed the whole React tree in ES module bundles such as Vite, because the third-party embed calls `require` at runtime. `SmartEmbed` now uses X's widgets script directly and falls back to a plain link when it cannot load.
+- Frames came up a few pixels short when the page ended in an element whose bottom margin collapses through its parent.
+
 ## 2.6.0 - 2026-11-06
 
 ### Security

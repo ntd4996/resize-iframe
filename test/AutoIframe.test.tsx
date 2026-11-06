@@ -2,6 +2,7 @@
 import { act, cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import AutoIframe from '../src/AutoIframe';
+import SmartEmbed from '../src/SmartEmbed';
 
 afterEach(() => {
   cleanup();
@@ -77,5 +78,23 @@ describe('AutoIframe', () => {
     render(<AutoIframe src="https://a.test/" title="a" apiEndpoint={`/detect-${status}`} />);
     const iframe = (await screen.findByTitle('a')) as HTMLIFrameElement;
     expect(iframe.getAttribute('src')?.startsWith(`/detect-${status}`)).toBe(expected);
+  });
+});
+
+describe('SmartEmbed with an X link', () => {
+  it('renders the post through the widgets script', async () => {
+    const createTweet = vi.fn().mockResolvedValue(document.createElement('div'));
+    vi.stubGlobal('twttr', { widgets: { createTweet }, ready: vi.fn() });
+    render(<SmartEmbed src="https://x.com/jack/status/20" width={500} />);
+    await vi.waitFor(() => expect(createTweet).toHaveBeenCalled());
+    expect(createTweet.mock.calls[0][0]).toBe('20');
+    expect(createTweet.mock.calls[0][2].width).toBe(500);
+  });
+
+  it('falls back to a link when the post cannot render', async () => {
+    const createTweet = vi.fn().mockResolvedValue(undefined);
+    vi.stubGlobal('twttr', { widgets: { createTweet }, ready: vi.fn() });
+    render(<SmartEmbed src="https://x.com/jack/status/20" />);
+    expect((await screen.findByRole('link')).getAttribute('href')).toBe('https://x.com/jack/status/20');
   });
 });

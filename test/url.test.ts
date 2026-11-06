@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { detectSocialProvider, parseHttpUrl } from '../src/url';
+import { tweetIdFromUrl } from '../src/XEmbed';
 
 describe('parseHttpUrl', () => {
   it('rejects schemes that would run script in an iframe', () => {
@@ -34,5 +35,12 @@ describe('detectSocialProvider', () => {
     'https://www.youtube.com/feed/trending',
   ])('leaves %s to the iframe', (url) => {
     expect(detectSocialProvider(url)).toBeNull();
+  });
+});
+
+describe('tweetIdFromUrl', () => {
+  it('reads the post id', () => {
+    expect(tweetIdFromUrl('https://x.com/jack/status/20?s=20')).toBe('20');
+    expect(tweetIdFromUrl('https://x.com/jack')).toBeNull();
   });
 });
