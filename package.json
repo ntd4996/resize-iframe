@@ -1,6 +1,6 @@
 {
   "name": "embed-react",
-  "version": "2.6.1",
+  "version": "2.6.2",
   "description": "React iframe that resizes to its content, with social media embeds and a hardened server proxy for Next.js",
   "keywords": [
     "react",
