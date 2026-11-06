@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Visit request</title>
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; padding: 20px; background: #eaf3ee; color: #10231a; font: 16px/1.4 system-ui, sans-serif; }
+      h1 { margin: 0 0 14px; font-size: 24px; }
+      label { display: block; margin-bottom: 14px; font-weight: 600; }
+      input[type='text'], input[type='email'] { display: block; width: 100%; min-height: 44px; margin-top: 4px; padding: 0 12px; border: 1px solid #9db8aa; border-radius: 4px; font: inherit; font-weight: 400; }
+      .check { display: flex; align-items: center; gap: 8px; min-height: 44px; }
+      .error { margin: 4px 0 0; padding: 8px 10px; background: #fbdcd8; color: #8c1c13; font-weight: 400; }
+      .done { padding: 16px; background: #1f6b47; color: #fff; }
+      button { min-height: 44px; padding: 0 18px; border: 0; background: #1f6b47; color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
+      [hidden] { display: none !important; }
+    </style>
+  </head>
+  <body>
+    <h1>Request a visit</h1>
+    <form id="form" novalidate>
+      <label>Name <input type="text" name="name" /><span class="error" hidden>Tell us who is coming.</span></label>
+      <label>Email <input type="email" name="email" /><span class="error" hidden style="display: block">Enter an email address so we can reply.</span></label>
+      <label class="check"><input type="checkbox" id="group" /> We are coming as a group</label>
+      <div id="extra" hidden>
+        <label>Group name <input type="text" name="group" /></label>
+        <label>How many people <input type="text" name="size" /></label>
+      </div>
+      <button>Send request</button>
+    </form>
+    <p class="done" id="done" hidden>Nothing was sent, this is only a sample form. The frame got shorter when it was replaced by this line.</p>
+    <script>
+      var form = document.getElementById('form');
+      document.getElementById('group').onchange = function (event) {
+        document.getElementById('extra').hidden = !event.target.checked;
+      };
+      form.onsubmit = function (event) {
+        event.preventDefault();
+        var valid = true;
+        ['name', 'email'].forEach(function (name) {
+          var field = form.elements[name];
+          var empty = !field.value.trim();
+          field.parentNode.querySelector('.error').hidden = !empty;
+          if (empty) valid = false;
+        });
+        if (valid) {
+          form.hidden = true;
+          document.getElementById('done').hidden = false;
+        }
+      };
+    </script>
+  </body>
+</html>
