@@ -1,9 +1,15 @@
 import { AutoIframe, SmartEmbed } from 'embed-react';
-import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { useMeasured, useResizeLog, useReveal } from './hooks';
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent, type PointerEvent, type ReactNode } from 'react';
+import { useInView, useMeasured, useResizeLog, useReveal } from './hooks';
 
-const SAMPLE = 'samples/lighthouse.html';
-const NOTE = 'samples/note.html';
+const SAMPLES = [
+  { id: 'tower', name: 'Lighthouse', src: 'samples/tower.html', hint: 'Add floors and the frame gets taller with them.' },
+  { id: 'chat', name: 'Live chat', src: 'samples/chat.html', hint: 'Messages keep arriving, then the chat clears and the frame shrinks.' },
+  { id: 'faq', name: 'Accordion', src: 'samples/faq.html', hint: 'Open and close the answers, inside the frame.' },
+  { id: 'form', name: 'Form', src: 'samples/form.html', hint: 'Submit it empty, or tick the group box.' },
+  { id: 'article', name: 'Article', src: 'samples/lighthouse.html', hint: 'Drag the yellow handle and the text wraps again.' },
+];
+const CHAT_PAUSED = 'samples/chat.html?paused';
 const INSTALL = 'npm install embed-react react-social-media-embed';
 const REPO = 'https://github.com/ntd4996/resize-iframe';
 const NPM = 'https://www.npmjs.com/package/embed-react';
@@ -41,12 +47,42 @@ function Code({ children }: { children: string }) {
   );
 }
 
+function Ruler({ height }: { height: number }) {
+  const marks = Math.min(Math.floor(height / 100), 120);
+  return (
+    <div className="ruler" data-ui aria-hidden="true">
+      {Array.from({ length: marks }, (_, index) => (
+        <span key={index} style={{ top: (index + 1) * 100 }}>
+          {(index + 1) % 2 === 0 ? (index + 1) * 100 : ''}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+const MIN_WIDTH = 280;
+
 function Hero() {
   const [stageRef, stage] = useMeasured<HTMLDivElement>();
   const [frameRef, frame] = useMeasured<HTMLDivElement>();
-  const [share, setShare] = useState(100);
-  const minWidth = 280;
-  const width = stage.width ? Math.round(minWidth + (Math.max(stage.width - minWidth, 0) * share) / 100) : 0;
+  const log = useResizeLog(frameRef, 3);
+  const [sample, setSample] = useState(0);
+  const [requested, setRequested] = useState<number | null>(null);
+  const [dragging, setDragging] = useState(false);
+
+  const available = Math.max(stage.width, MIN_WIDTH);
+  const width = Math.min(requested ?? available, available);
+
+  const dragTo = (event: PointerEvent<HTMLElement>) => {
+    const left = stageRef.current?.getBoundingClientRect().left ?? 0;
+    setRequested(Math.max(MIN_WIDTH, Math.round(event.clientX - left)));
+  };
+  const nudge = (event: KeyboardEvent<HTMLElement>) => {
+    const step = event.key === 'ArrowRight' ? 20 : event.key === 'ArrowLeft' ? -20 : 0;
+    if (!step) return;
+    event.preventDefault();
+    setRequested(Math.max(MIN_WIDTH, Math.min(available, width + step)));
+  };
 
   return (
     <header className="hero">
@@ -66,35 +102,64 @@ function Hero() {
             <span><span>as its page</span></span>
           </h1>
           <p className="lead">
-            embed-react is a React component that resizes an iframe to fit the page inside it. Drag the width and the
-            frame keeps up.
+            embed-react is a React component that resizes an iframe to fit the page inside it. Play with the page below
+            and watch the number.
           </p>
           <div className="install">
             <code>{INSTALL}</code>
             <CopyButton text={INSTALL} />
           </div>
         </div>
-        <output className="readout" htmlFor="width" aria-live="off">
-          <span className="figure">{frame.height || 600}</span>
-          <span className="unit">px tall at {width || '100%'}px wide</span>
-        </output>
+        <div className="readout">
+          <div className="ticker" data-ui aria-hidden="true">
+            {log.map((entry) => (
+              <code key={entry.id}>{`height: ${entry.height}`}</code>
+            ))}
+          </div>
+          <span className="figure">{frame.height || 400}</span>
+          <span className="unit">px tall at {width}px wide</span>
+        </div>
       </div>
 
-      <label className="slider" htmlFor="width">
-        <span>Width</span>
-        <input
-          id="width"
-          type="range"
-          min={0}
-          max={100}
-          value={share}
-          onChange={(event) => setShare(Number(event.target.value))}
-        />
-      </label>
+      <div className="tabs" role="group" aria-label="Sample page">
+        {SAMPLES.map((item, index) => (
+          <button key={item.id} type="button" aria-pressed={index === sample} onClick={() => setSample(index)}>
+            {item.name}
+          </button>
+        ))}
+        <p className="hint">{SAMPLES[sample].hint}</p>
+      </div>
 
-      <div ref={stageRef} className="stage">
-        <div ref={frameRef} className="frame" data-ui>
-          <AutoIframe src={SAMPLE} title="Sample article about the Eddystone lighthouses" width={width || '100%'} useProxy={false} />
+      <div className="stage-wrap">
+        <Ruler height={frame.height} />
+        <div ref={stageRef} className="stage">
+          <div className={dragging ? 'playground is-dragging' : 'playground'} style={{ width }}>
+            <div ref={frameRef} className="frame" data-ui>
+              <AutoIframe src={SAMPLES[sample].src} title={`Sample page: ${SAMPLES[sample].name}`} useProxy={false} initialHeight={400} />
+            </div>
+            <div
+              className="handle"
+              data-ui
+              role="slider"
+              tabIndex={0}
+              aria-label="Frame width"
+              aria-valuemin={MIN_WIDTH}
+              aria-valuemax={available}
+              aria-valuenow={width}
+              onKeyDown={nudge}
+              onPointerDown={(event) => {
+                event.currentTarget.setPointerCapture(event.pointerId);
+                setDragging(true);
+              }}
+              onPointerMove={(event) => {
+                if (dragging) dragTo(event);
+              }}
+              onPointerUp={() => setDragging(false)}
+              onPointerCancel={() => setDragging(false)}
+            >
+              <span>Drag</span>
+            </div>
+          </div>
         </div>
       </div>
     </header>
@@ -102,91 +167,43 @@ function Hero() {
 }
 
 function Compare() {
-  const ref = useReveal<HTMLElement>();
+  const frames = useRef<HTMLDivElement>(null);
+  const setPlaying = useCallback((on: boolean) => {
+    frames.current?.querySelectorAll('iframe').forEach((frame) => {
+      frame.contentWindow?.postMessage({ demo: 'play', on }, window.location.origin);
+    });
+  }, []);
+  const ref = useInView<HTMLElement>(setPlaying);
+  const [autoRef, auto] = useMeasured<HTMLDivElement>();
+  const gridRef = useReveal<HTMLDivElement>();
+
   return (
     <section ref={ref} className="compare" id="compare">
-      <h2>Same page, two iframes</h2>
+      <h2>Same chat, two iframes</h2>
       <p className="section-lead">
-        An iframe with no height set is 150px tall, whatever is inside it. Both frames below load the same article.
+        An iframe with no height set is 150px tall, whatever is inside it. Both of these are running the same page.
       </p>
-      <div className="compare-grid">
+      <div ref={gridRef}>
+      <div ref={frames} className="compare-grid">
         <figure>
-          <figcaption>Plain iframe, 150px, its own scrollbar</figcaption>
+          <figcaption>Plain iframe: new messages land out of sight</figcaption>
           <div className="frame" data-ui>
-            <iframe src={SAMPLE} title="The article in a plain iframe" className="plain" />
+            <iframe src={CHAT_PAUSED} title="The chat in a plain iframe" className="plain" onLoad={() => setPlaying(true)} />
           </div>
-          <Code>{`<iframe src="/article.html" />`}</Code>
+          <p className="still">
+            <strong>150</strong>
+            <span>px, whatever the page does</span>
+          </p>
+          <Code>{`<iframe src="/chat.html" />`}</Code>
         </figure>
         <figure>
-          <figcaption>AutoIframe, the whole article</figcaption>
-          <div className="frame" data-ui>
-            <AutoIframe src={SAMPLE} title="The article in AutoIframe" useProxy={false} initialHeight={150} />
+          <figcaption>AutoIframe: {auto.height}px and making room for each message</figcaption>
+          <div ref={autoRef} className="frame" data-ui>
+            <AutoIframe src={CHAT_PAUSED} title="The chat in AutoIframe" useProxy={false} initialHeight={150} />
           </div>
-          <Code>{`<AutoIframe src="/article.html" />`}</Code>
+          <Code>{`<AutoIframe src="/chat.html" />`}</Code>
         </figure>
       </div>
-    </section>
-  );
-}
-
-const CHANGES = [
-  {
-    id: 'late',
-    sentence: 'Content arrives after the page has loaded.',
-    note: 'Adds a section and a large picture to the article.',
-  },
-  {
-    id: 'collapse',
-    sentence: 'A section closes and the page gets shorter.',
-    note: 'Hides a section. A frame measured by scrollHeight could not shrink here.',
-  },
-  {
-    id: 'type',
-    sentence: 'The reader asks for larger type.',
-    note: 'Every paragraph wraps again at 22px.',
-  },
-];
-
-function Follow() {
-  const ref = useReveal<HTMLElement>();
-  const [frameRef, frame] = useMeasured<HTMLDivElement>();
-  const [state, setState] = useState<Record<string, boolean>>({});
-
-  const toggle = (id: string) => {
-    const on = !state[id];
-    setState({ ...state, [id]: on });
-    frameRef.current?.querySelector('iframe')?.contentWindow?.postMessage({ demo: id, on }, window.location.origin);
-  };
-
-  return (
-    <section ref={ref} className="follow" id="follow">
-      <div className="follow-text">
-        <h2>It follows the page as it changes</h2>
-        <p className="section-lead">
-          The script in the frame watches the page and reports whenever its height moves, so nothing polls. These
-          switches change the article in the frame.
-        </p>
-        <ul className="switches">
-          {CHANGES.map((change) => (
-            <li key={change.id} className={state[change.id] ? 'is-on' : undefined}>
-              <button type="button" role="switch" aria-checked={!!state[change.id]} onClick={() => toggle(change.id)}>
-                <span className="switch-text">
-                  <span className="sentence">{change.sentence}</span>
-                  <span className="note">{change.note}</span>
-                </span>
-                <span className="toggle" data-ui aria-hidden="true" />
-              </button>
-            </li>
-          ))}
-        </ul>
-        <p className="current">
-          Frame height now: <strong>{frame.height}px</strong>
-        </p>
-      </div>
-      <div className="follow-frame">
-        <div ref={frameRef} className="frame" data-ui>
-          <AutoIframe src={SAMPLE} title="The article the switches change" useProxy={false} />
-        </div>
       </div>
     </section>
   );
@@ -204,8 +221,8 @@ const SETUPS = [
     page: 'Same origin as your site',
     setup: 'Nothing',
     result: 'Resizes',
-    detail: 'The component can reach into the frame, so it adds the script by itself. Every frame on this page works this way.',
-    code: `<AutoIframe src="/article.html" />`,
+    detail: 'The component can reach into the frame, so it adds the script by itself. Every sample on this site works this way.',
+    code: `<AutoIframe src="/page.html" />`,
   },
   {
     page: 'Another origin',
@@ -237,8 +254,9 @@ const SETUPS = [
 
 function Board() {
   const [open, setOpen] = useState(2);
+  const ref = useReveal<HTMLElement>();
   return (
-    <section className="board-section" id="setup">
+    <section ref={ref} className="board-section" id="setup">
       <h2>What each page needs</h2>
       <ul className="board" data-ui>
         {SETUPS.map((row, index) => (
@@ -265,48 +283,33 @@ function Board() {
 
 function Start() {
   const ref = useReveal<HTMLElement>();
-  const log = useResizeLog(5);
-  const [noteRef, note] = useMeasured<HTMLDivElement>();
 
   return (
     <section ref={ref} className="start" id="start">
       <h2>Three steps</h2>
-      <div className="exchange">
-        <h3>First, install it.</h3>
-        <Code>{INSTALL}</Code>
-        <p className="response">Ships ES modules, CommonJS and TypeScript types. Works with React 18 and newer.</p>
-      </div>
-      <div className="exchange">
-        <h3>Then render it.</h3>
-        <Code>{`import { AutoIframe } from 'embed-react';
-
-<AutoIframe src="/note.html" title="Note" />`}</Code>
-        <div ref={noteRef} className="response frame" data-ui>
-          <AutoIframe src={NOTE} title="A one-line note" useProxy={false} initialHeight={150} />
+      <div className="steps">
+        <div className="exchange">
+          <h3>First, install it.</h3>
+          <Code>{INSTALL}</Code>
+          <p className="response">Ships ES modules, CommonJS and TypeScript types. Works with React 18 and newer.</p>
         </div>
-        <p className="response caption">A one-line page gets a {note.height}px frame.</p>
-      </div>
-      <div className="exchange">
-        <h3>For other sites, add the proxy.</h3>
-        <Code>{`// pages/api/embed.ts
+        <div className="exchange">
+          <h3>Then render it.</h3>
+          <Code>{`import { AutoIframe } from 'embed-react';
+
+<AutoIframe src="/page.html" title="Page" />`}</Code>
+          <p className="response">Same-origin pages, like every sample on this site, need nothing else.</p>
+        </div>
+        <div className="exchange">
+          <h3>For other sites, add the proxy.</h3>
+          <Code>{`// pages/api/embed.ts
 import { createPagesEmbedProxy } from 'embed-react/server';
 
 export default createPagesEmbedProxy({
   allowedHosts: ['example.com'],
 });`}</Code>
-        <p className="response">
-          This site is static, so its frames skip the proxy. The message is the same either way, and these are the
-          latest ones this page received:
-        </p>
-        <ol className="log" data-ui aria-label="Latest resize messages" reversed>
-          {log.length === 0 && <li>Move a slider or a switch above.</li>}
-          {log.map((entry) => (
-            <li key={entry.id}>
-              <code>{`{ type: 'iframe-resize', height: ${entry.height} }`}</code>
-              <span>{(entry.at / 1000).toFixed(1)}s</span>
-            </li>
-          ))}
-        </ol>
+          <p className="response">It adds the same script to the page and refuses private addresses.</p>
+        </div>
       </div>
     </section>
   );
@@ -355,12 +358,21 @@ function Social() {
 }
 
 function Closing() {
+  const ref = useReveal<HTMLElement>();
   return (
-    <section className="closing">
-      <h2>Install it in one line</h2>
-      <div className="install install-large">
-        <code>{INSTALL}</code>
-        <CopyButton text={INSTALL} />
+    <section ref={ref} className="closing">
+      <div className="closing-grid">
+        <figure>
+          <img src="samples/img/lupton-8296.jpg" width={1400} height={1044} loading="lazy" alt="Engraving of the Eddystone Lighthouse in a rough sea" />
+          <figcaption>The Eddystone Lighthouse, engraving by Thomas Goff Lupton. The article sample tells its story.</figcaption>
+        </figure>
+        <div>
+          <h2>Install it in one line</h2>
+          <div className="install install-large">
+            <code>{INSTALL}</code>
+            <CopyButton text={INSTALL} />
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -372,7 +384,7 @@ function Footer() {
       <div className="tile tile-statement">
         <p>Free and open source under the MIT licence.</p>
         <p className="credits">
-          Article pictures: The Eddystone Lighthouse by Thomas Goff Lupton (
+          Pictures in the article sample: The Eddystone Lighthouse by Thomas Goff Lupton (
           <a href="https://commons.wikimedia.org/w/index.php?curid=113277123">Wikimedia Commons</a>, CC0) and Eddystone
           Lighthouse by Mary Altha Nims (<a href="https://commons.wikimedia.org/w/index.php?curid=77195562">Wikimedia Commons</a>, CC0).
         </p>
@@ -397,7 +409,6 @@ export default function App() {
       <Hero />
       <main>
         <Compare />
-        <Follow />
         <Board />
         <Start />
         <Social />

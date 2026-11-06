@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Keeper's log chat</title>
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; padding: 16px; background: #f2f4f6; color: #16202a; font: 16px/1.4 system-ui, sans-serif; }
+      h1 { margin: 0 0 12px; font-size: 18px; }
+      ul { display: flex; flex-direction: column; gap: 8px; margin: 0 0 12px; padding: 0; list-style: none; }
+      li { max-width: 78%; padding: 8px 12px; background: #fff; border-radius: 14px 14px 14px 4px; animation: in 0.22s ease-out; }
+      li.me { align-self: flex-end; background: #1565d8; color: #fff; border-radius: 14px 14px 4px 14px; }
+      @keyframes in { from { opacity: 0; translate: 0 8px; } }
+      form { display: flex; gap: 8px; }
+      input { flex: 1; min-width: 0; min-height: 44px; padding: 0 12px; border: 1px solid #c5ccd3; border-radius: 8px; font: inherit; }
+      button { min-height: 44px; padding: 0 16px; border: 0; border-radius: 8px; background: #16202a; color: #fff; font: inherit; cursor: pointer; }
+      @media (prefers-reduced-motion: reduce) { li { animation: none; } }
+    </style>
+  </head>
+  <body>
+    <h1>Relief boat, Eddystone</h1>
+    <ul id="log"></ul>
+    <form id="form">
+      <input id="text" aria-label="Your message" placeholder="Say something" autocomplete="off" />
+      <button>Send</button>
+    </form>
+    <script>
+      var SCRIPT = [
+        ['Morning. Are you at the rock yet?', false],
+        ['Twenty minutes out. Swell is up.', true],
+        ['Can you land?', false],
+        ['Not at this tide. We wait an hour.', true],
+        ['Did you bring the lamp oil?', false],
+        ['Oil, bread and the post.', true],
+        ['Then we will forgive the delay.', false]
+      ];
+      var log = document.getElementById('log');
+      var step = 0;
+      var timer = null;
+      var playing = !/paused/.test(location.search);
+      function say(text, me) {
+        var item = document.createElement('li');
+        item.textContent = text;
+        if (me) item.className = 'me';
+        log.appendChild(item);
+      }
+      function tick() {
+        timer = null;
+        if (!playing) return;
+        if (step >= SCRIPT.length) {
+          log.textContent = '';
+          step = 0;
+          timer = setTimeout(tick, 700);
+          return;
+        }
+        say(SCRIPT[step][0], SCRIPT[step][1]);
+        step++;
+        timer = setTimeout(tick, step >= SCRIPT.length ? 2600 : 1100);
+      }
+      function setPlaying(on) {
+        playing = on;
+        if (on && timer === null) tick();
+      }
+      document.getElementById('form').onsubmit = function (event) {
+        event.preventDefault();
+        var field = document.getElementById('text');
+        if (field.value.trim()) say(field.value.trim(), true);
+        field.value = '';
+      };
+      window.addEventListener('message', function (event) {
+        if (event.origin === location.origin && event.data && event.data.demo === 'play') setPlaying(event.data.on);
+      });
+      setPlaying(playing);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Build a lighthouse</title>
+    <style>
+      * { box-sizing: border-box; }
+      body { --u: min(0.62px, calc(100vw / 720)); position: relative; margin: 0; overflow-x: hidden; background: #8ad2ee; color: #123044; font: 700 17px/1.3 ui-rounded, 'Arial Rounded MT Bold', system-ui, sans-serif; text-align: center; }
+
+      .sky { position: absolute; inset: 0; overflow: hidden; }
+      .cloud { position: absolute; left: 0; width: 200px; animation: drift linear infinite; will-change: transform; }
+      .c1 { top: 60px; animation-duration: 58s; animation-delay: -12s; }
+      .c2 { top: 240px; width: 130px; animation-duration: 84s; animation-delay: -60s; opacity: 0.9; }
+      .c3 { top: 44%; width: 170px; animation-duration: 70s; animation-delay: -35s; }
+      @keyframes drift { from { transform: translateX(-240px); } to { transform: translateX(calc(100vw + 40px)); } }
+      .gull { position: absolute; left: 0; width: 76px; animation: fly linear infinite; will-change: transform; }
+      .gull img { display: block; width: 100%; animation: flap 0.9s ease-in-out infinite alternate; transform-origin: 55% 50%; }
+      .g1 { top: 120px; animation-duration: 21s; animation-delay: -6s; }
+      .g2 { top: 210px; width: 52px; animation-duration: 28s; animation-delay: -19s; }
+      @keyframes fly { from { transform: translateX(calc(100vw + 60px)); } to { transform: translateX(-120px); } }
+      @keyframes flap { from { transform: translateY(-7px) rotate(-5deg) scaleY(1); } to { transform: translateY(7px) rotate(4deg) scaleY(0.84); } }
+
+      .controls { position: relative; z-index: 3; padding: 20px 12px 10px; }
+      .buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+      button { min-height: 46px; padding: 0 20px; border: 3px solid #2e1a24; border-radius: 14px; background: #ffc933; color: #2e1a24; font: inherit; cursor: pointer; box-shadow: 0 4px 0 #2e1a24; transition: transform 0.1s, box-shadow 0.1s, background-color 0.1s; }
+      button:hover { background: #ffd964; }
+      button:active { transform: translateY(4px); box-shadow: 0 0 0 #2e1a24; }
+      button.quiet { background: #fff; }
+      button.quiet:hover { background: #f0f8fb; }
+      button:disabled { opacity: 0.5; cursor: default; }
+      .controls p { display: inline-block; margin: 14px 0 0; padding: 4px 14px; border: 3px solid #2e1a24; border-radius: 16px; background: #fff; color: #2e1a24; font-size: 15px; }
+
+      .tower { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; padding-top: 10px; }
+      .tower img { display: block; }
+      .top-wrap { position: relative; width: calc(362 * var(--u)); height: calc(520 * var(--u)); }
+      .top-wrap > .main { position: relative; z-index: 1; width: 100%; height: 100%; }
+      .glow { position: absolute; left: 50%; top: calc(170 * var(--u)); width: calc(150 * var(--u)); height: calc(150 * var(--u)); margin: calc(-75 * var(--u)) 0 0 calc(-75 * var(--u)); border-radius: 50%; background: #fff3a8; filter: blur(calc(14 * var(--u))); opacity: 0.45; animation: glow 1.6s ease-in-out infinite alternate; }
+      @keyframes glow { to { opacity: 0.95; transform: scale(1.5); } }
+      .keeper { position: absolute; z-index: 2; left: calc(84 * var(--u)); top: calc(186 * var(--u)); width: calc(50 * var(--u)); height: auto; transform-origin: 50% 100%; animation: wave 1s ease-in-out infinite alternate; }
+      @keyframes wave { from { transform: rotate(-4deg); } to { transform: rotate(5deg); } }
+      #floors img { width: calc(362 * var(--u)); height: calc(136 * var(--u)); }
+      #floors img.new { animation: pop 0.42s cubic-bezier(0.34, 1.56, 0.64, 1); }
+      @keyframes pop { from { transform: translateY(-14px) scale(1.06, 0.8); } }
+      .base { width: calc(434 * var(--u)); height: calc(415 * var(--u)); transform: translateX(calc(-1 * var(--u))); }
+
+      .sea { position: relative; z-index: 2; height: 150px; margin-top: calc(-64 * var(--u)); background: url(img/sea.webp) 0 0 / auto 100% repeat-x; animation: swell 40s linear infinite; }
+      .sea::after { content: ''; position: absolute; z-index: 2; inset: 58px 0 0; background: url(img/sea.webp) 0 0 / auto 92px repeat-x; animation: swell-front 24s linear infinite; }
+      @keyframes swell-front { to { background-position-x: -634px; } }
+      @keyframes swell { to { background-position-x: 1034px; } }
+      .boat { position: absolute; z-index: 1; left: 9%; top: -62px; width: 110px; transform-origin: 50% 80%; animation: bob 2.6s ease-in-out infinite alternate; }
+      @keyframes bob { from { transform: translateY(-4px) rotate(-4deg); } to { transform: translateY(7px) rotate(4deg); } }
+
+      @media (max-width: 480px) { .g2, .c3 { display: none; } .cloud { width: 100px; } .c1 { top: 170px; } .gull { width: 54px; } .g1 { top: 210px; } .boat { width: 70px; top: -30px; left: 3%; } button { min-height: 44px; padding: 0 12px; font-size: 15px; } }
+      @media (prefers-reduced-motion: reduce) { * { animation: none !important; } .cloud { transform: translateX(20vw); } .c2 { transform: translateX(65vw); } .gull { transform: translateX(70vw); } }
+    </style>
+  </head>
+  <body>
+    <div class="sky" aria-hidden="true">
+      <img class="cloud c1" src="img/cloud.webp" alt="" />
+      <img class="cloud c2" src="img/cloud.webp" alt="" />
+      <img class="cloud c3" src="img/cloud.webp" alt="" />
+      <div class="gull g1"><img src="img/gull.webp" alt="" /></div>
+      <div class="gull g2"><img src="img/gull.webp" alt="" /></div>
+    </div>
+    <div class="controls">
+      <div class="buttons">
+        <button type="button" id="add">Add a floor</button>
+        <button type="button" id="remove" class="quiet">Remove one</button>
+      </div>
+      <p><span id="count"></span>. The page is as tall as the tower.</p>
+    </div>
+    <div class="tower">
+      <div class="top-wrap">
+        <div class="glow" aria-hidden="true"></div>
+        <img class="main" src="img/tower-top.webp" width="362" height="520" alt="Top of a cartoon lighthouse with a red dome and a glowing lamp" />
+        <img class="keeper" src="img/keeper.webp" alt="A lighthouse keeper waving from the balcony" />
+      </div>
+      <div id="floors"></div>
+      <img class="base" src="img/tower-base.webp" width="434" height="415" alt="Foot of the lighthouse on a grey rock" />
+    </div>
+    <div class="sea"><img class="boat" src="img/boat.webp" alt="A small sailboat bobbing on the waves" /></div>
+    <script>
+      var MAX = 40;
+      var floors = document.getElementById('floors');
+      var count = document.getElementById('count');
+      var add = document.getElementById('add');
+      var remove = document.getElementById('remove');
+      function refresh() {
+        count.textContent = floors.children.length + 3 + ' floors';
+        add.disabled = floors.children.length >= MAX;
+        remove.disabled = floors.children.length === 0;
+      }
+      function addFloor(animate) {
+        if (floors.children.length >= MAX) return;
+        var floor = document.createElement('img');
+        if (animate) floor.className = 'new';
+        floor.src = 'img/tower-floor.webp';
+        floor.alt = '';
+        floor.width = 362;
+        floor.height = 136;
+        floors.insertBefore(floor, floors.firstChild);
+        refresh();
+      }
+      add.onclick = function () { addFloor(true); };
+      remove.onclick = function () { floors.removeChild(floors.firstChild); refresh(); };
+      refresh();
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        addFloor(false); addFloor(false);
+      } else {
+        var built = 0;
+        var timer = setInterval(function () {
+          addFloor(true);
+          if (++built >= 2) clearInterval(timer);
+        }, 600);
+      }
+    </script>
+  </body>
+</html>
