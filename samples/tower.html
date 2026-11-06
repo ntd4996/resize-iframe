@@ -6,63 +6,119 @@
     <title>Build a lighthouse</title>
     <style>
       * { box-sizing: border-box; }
-      body { margin: 0; overflow-x: hidden; background: #123c52; color: #fff; font: 500 16px/1.3 system-ui, sans-serif; text-align: center; }
-      .controls { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; padding: 20px 12px 8px; }
-      button { min-height: 44px; padding: 0 18px; border: 0; background: #ffc933; color: #0a0a0a; font: inherit; cursor: pointer; transition: transform 0.12s; }
+      body { position: relative; margin: 0; overflow-x: hidden; background: #0d2438; color: #fff; font: 500 16px/1.3 system-ui, sans-serif; text-align: center; }
+      .stars { position: absolute; inset: 0; overflow: hidden; }
+      .stars i { position: absolute; width: 2px; height: 2px; border-radius: 50%; background: #dfe8ef; animation: twinkle 3s ease-in-out infinite alternate; }
+      @keyframes twinkle { to { opacity: 0.25; } }
+      .moon { position: absolute; top: 28px; right: 9%; width: 44px; height: 44px; border-radius: 50%; background: #e9e4d2; }
+      .moon::after { content: ''; position: absolute; top: -4px; left: 11px; width: 40px; height: 40px; border-radius: 50%; background: #0d2438; }
+
+      .controls { position: relative; z-index: 3; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; padding: 20px 12px 8px; }
+      button { min-height: 44px; padding: 0 18px; border: 0; background: #ffc933; color: #0a0a0a; font: inherit; cursor: pointer; transition: transform 0.12s, background-color 0.12s; }
       button:hover { background: #ffd964; }
       button:active { transform: scale(0.95); }
-      button.quiet { background: #1d5570; color: #fff; }
-      button.quiet:hover { background: #276a8b; }
+      button.quiet { background: #1c3f58; color: #fff; }
+      button.quiet:hover { background: #27526f; }
       button:disabled { opacity: 0.45; cursor: default; }
       output { min-width: 5.5em; font-variant-numeric: tabular-nums; }
-      .tower { --w: clamp(84px, 20vw, 170px); display: flex; flex-direction: column; align-items: center; padding-top: 24px; }
-      .lamp { position: relative; display: flex; flex-direction: column; align-items: center; }
-      .roof { width: 0; height: 0; border: solid transparent; border-width: 0 calc(var(--w) * 0.3) calc(var(--w) * 0.22); border-bottom-color: #c8322b; }
-      .glass { position: relative; z-index: 1; width: calc(var(--w) * 0.42); height: calc(var(--w) * 0.34); background: #ffc933; animation: glow 2.4s ease-in-out infinite alternate; }
-      .glass::before, .glass::after { content: ''; position: absolute; top: 0; bottom: 0; width: 8%; background: #0a0a0a; }
-      .glass::before { left: 30%; }
-      .glass::after { right: 30%; }
-      @keyframes glow { to { background: #fff3c4; } }
-      .gallery { position: relative; z-index: 1; width: calc(var(--w) * 0.86); height: calc(var(--w) * 0.08); background: #0a0a0a; }
-      .beam { position: absolute; top: calc(var(--w) * -0.61); height: calc(var(--w) * 2); width: 100vw; pointer-events: none; background: #ffc933; animation: sweep 2.4s ease-in-out infinite alternate; }
-      .beam.left { right: 50%; clip-path: polygon(0 0, 100% 44%, 100% 56%, 0 100%); }
-      .beam.right { left: 50%; clip-path: polygon(0 44%, 100% 0, 100% 100%, 0 56%); }
-      @keyframes sweep { from { opacity: 0.06; } to { opacity: 0.2; } }
-      .floor { position: relative; width: var(--w); height: calc(var(--w) * 0.42); background: #fff; }
-      .floor:nth-child(even) { background: #c8322b; }
-      .floor i { position: absolute; left: 50%; top: 26%; width: 16%; height: 48%; margin-left: -8%; background: #123c52; }
-      .floor.new i, .floor.new { animation: drop 0.28s cubic-bezier(0.16, 1, 0.3, 1); }
-      @keyframes drop { from { opacity: 0; translate: 0 -12px; } }
-      .rock { width: calc(var(--w) * 2.2); height: calc(var(--w) * 0.3); background: #34312c; clip-path: polygon(8% 100%, 18% 20%, 32% 0, 68% 0, 84% 25%, 94% 100%); }
-      .sea { height: 72px; margin-top: -14px; background: #0c2b3c; position: relative; }
-      .sea p { margin: 0; padding-top: 30px; color: #9cc0d2; font-weight: 400; font-size: 14px; }
+
+      .tower { --w: clamp(120px, 22vw, 210px); position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; padding-top: 20px; }
+      .top { position: relative; width: var(--w); }
+      .top svg, .base svg { position: relative; z-index: 1; display: block; width: 100%; height: auto; overflow: visible; }
+      .beam { position: absolute; top: 34%; height: calc(var(--w) * 1.6); margin-top: calc(var(--w) * -0.8); width: 110vw; background: #ffe9a0; opacity: 0.13; pointer-events: none; animation: sweep 5s ease-in-out infinite alternate; }
+      .beam.left { right: 50%; clip-path: polygon(0 0, 100% 47%, 100% 53%, 0 100%); transform-origin: right center; }
+      .beam.right { left: 50%; clip-path: polygon(0 47%, 100% 0, 100% 100%, 0 53%); transform-origin: left center; animation-direction: alternate-reverse; }
+      @keyframes sweep { from { rotate: -5deg; } to { rotate: 5deg; } }
+      .lens { animation: glow 2.5s ease-in-out infinite alternate; }
+      @keyframes glow { to { fill: #fff6cf; } }
+
+      .shaft { position: relative; width: calc(var(--w) * 0.86); clip-path: polygon(11% 0, 89% 0, 100% 100%, 0 100%); }
+      .shaft::before { content: ''; position: absolute; z-index: 1; inset: 0 0 0 62%; background: #0b1a26; opacity: 0.22; }
+      .shaft::after { content: ''; position: absolute; z-index: 1; inset: 0 auto 0 0; width: 22%; background: #fff; opacity: 0.1; }
+      .floor { position: relative; height: calc(var(--w) * 0.34); background: #f3efe6; }
+      .floor:nth-child(even) { background: #c23a30; }
+      .floor.new { animation: drop 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+      @keyframes drop { from { opacity: 0; } }
+      .floor:nth-child(odd) i { position: absolute; left: 50%; top: 24%; width: 14%; height: 54%; margin-left: -7%; border-radius: 40% 40% 0 0 / 30% 30% 0 0; background: #1b3346; }
+      .floor:nth-child(odd) i::after { content: ''; position: absolute; inset: 14% 18% 12%; border-radius: inherit; background: #ffcf57; }
+
+      .base { position: relative; width: calc(var(--w) * 2.3); margin-bottom: -16px; }
+      .sea { position: relative; z-index: 2; height: 96px; overflow: hidden; background: #0a2f45; }
+      .sea svg { position: absolute; left: 0; width: 200%; height: 28px; animation: drift 9s linear infinite; }
+      .sea .w1 { top: 0; fill: #14506f; }
+      .sea .w2 { top: 12px; fill: #0f3f5a; animation-duration: 6s; animation-direction: reverse; }
+      .sea .w3 { top: 26px; fill: #0a2f45; animation-duration: 12s; }
+      @keyframes drift { to { translate: -50% 0; } }
+      .sea p { position: absolute; left: 0; right: 0; bottom: 14px; margin: 0; color: #a9c6d6; font-weight: 400; font-size: 14px; }
       @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
     </style>
   </head>
   <body>
+    <div class="stars" id="stars" aria-hidden="true"><div class="moon"></div></div>
     <div class="controls">
       <button type="button" id="add">Add a floor</button>
       <button type="button" id="remove" class="quiet">Remove one</button>
       <output id="count"></output>
     </div>
     <div class="tower">
-      <div class="lamp">
-        <div class="roof"></div>
-        <div class="glass"></div>
-        <div class="gallery"></div>
+      <div class="top" aria-hidden="true">
         <div class="beam left"></div>
         <div class="beam right"></div>
+        <svg viewBox="0 0 200 150" role="presentation">
+          <rect x="97" y="0" width="6" height="16" fill="#1b2b38" />
+          <circle cx="100" cy="3" r="5" fill="#c23a30" />
+          <path d="M58 54 C62 26 82 14 100 14 C118 14 138 26 142 54 Z" fill="#c23a30" />
+          <path d="M100 14 C118 14 138 26 142 54 L112 54 C112 34 108 22 100 14 Z" fill="#9c2c24" />
+          <rect x="52" y="50" width="96" height="8" fill="#1b2b38" />
+          <rect class="lens" x="62" y="58" width="76" height="52" fill="#ffc933" />
+          <rect x="62" y="58" width="5" height="52" fill="#1b2b38" />
+          <rect x="88" y="58" width="4" height="52" fill="#1b2b38" />
+          <rect x="108" y="58" width="4" height="52" fill="#1b2b38" />
+          <rect x="133" y="58" width="5" height="52" fill="#1b2b38" />
+          <rect x="62" y="82" width="76" height="3" fill="#1b2b38" />
+          <rect x="30" y="94" width="140" height="4" fill="#1b2b38" />
+          <rect x="30" y="94" width="4" height="22" fill="#1b2b38" />
+          <rect x="52" y="94" width="3" height="22" fill="#1b2b38" />
+          <rect x="145" y="94" width="3" height="22" fill="#1b2b38" />
+          <rect x="166" y="94" width="4" height="22" fill="#1b2b38" />
+          <rect x="24" y="114" width="152" height="10" fill="#1b2b38" />
+          <path d="M34 124 H166 L158 150 H42 Z" fill="#26394a" />
+          <path d="M122 124 H166 L158 150 H122 Z" fill="#1b2b38" />
+        </svg>
       </div>
-      <div id="floors" style="display: contents"></div>
-      <div class="rock"></div>
+      <div class="shaft" id="floors"></div>
+      <div class="base" aria-hidden="true">
+        <svg viewBox="0 0 460 150" role="presentation">
+          <path d="M138 0 H322 L336 34 H124 Z" fill="#8f8a7e" />
+          <path d="M262 0 H322 L336 34 H262 Z" fill="#716d63" />
+          <path d="M214 34 V12 C214 3 246 3 246 12 V34 Z" fill="#1b3346" />
+          <path d="M104 34 H356 L388 74 L436 150 H16 L66 80 Z" fill="#3c4247" />
+          <path d="M230 34 H356 L388 74 L436 150 H286 L250 88 Z" fill="#2a2f34" />
+          <path d="M104 34 L66 80 L16 150 H120 L148 84 Z" fill="#4c5358" />
+          <path d="M148 84 L120 150 H286 L250 88 L196 72 Z" fill="#343a3f" />
+        </svg>
+      </div>
     </div>
-    <div class="sea"><p>This page is as tall as the lighthouse in it.</p></div>
+    <div class="sea">
+      <svg class="w1" viewBox="0 0 800 28" preserveAspectRatio="none" aria-hidden="true"><path d="M0 14 Q50 0 100 14 T200 14 T300 14 T400 14 T500 14 T600 14 T700 14 T800 14 V28 H0 Z" /></svg>
+      <svg class="w2" viewBox="0 0 800 28" preserveAspectRatio="none" aria-hidden="true"><path d="M0 14 Q40 2 80 14 T160 14 T240 14 T320 14 T400 14 T480 14 T560 14 T640 14 T720 14 T800 14 V28 H0 Z" /></svg>
+      <svg class="w3" viewBox="0 0 800 28" preserveAspectRatio="none" aria-hidden="true"><path d="M0 14 Q60 4 120 14 T240 14 T360 14 T480 14 T600 14 T720 14 T840 14 V28 H0 Z" /></svg>
+      <p>This page is as tall as the lighthouse in it.</p>
+    </div>
     <script>
       var MAX = 40;
       var floors = document.getElementById('floors');
       var count = document.getElementById('count');
       var add = document.getElementById('add');
       var remove = document.getElementById('remove');
+      var stars = document.getElementById('stars');
+      for (var s = 0; s < 70; s++) {
+        var star = document.createElement('i');
+        star.style.left = ((s * 37) % 100) + '%';
+        star.style.top = ((s * 53) % 100) + '%';
+        star.style.animationDelay = -(s % 6) * 0.5 + 's';
+        stars.appendChild(star);
+      }
       function refresh() {
         var n = floors.children.length;
         count.textContent = n + (n === 1 ? ' floor' : ' floors');
