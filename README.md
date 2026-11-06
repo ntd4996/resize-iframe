@@ -110,7 +110,7 @@ The proxy always:
 - refuses loopback, private and link-local addresses, checked when the connection opens and again on every redirect, so cloud metadata endpoints stay out of reach
 - serves pages with `Content-Security-Policy: sandbox`, which gives them an opaque origin with no access to your site's cookies or storage
 
-If you copied the proxy code from a README older than 2.6.1, replace it. That code has neither protection. See the [changelog](./CHANGELOG.md).
+If you copied the proxy code from a README older than 2.6.0, replace it. That code has neither protection. See the [changelog](./CHANGELOG.md).
 
 ## Limitations
 
