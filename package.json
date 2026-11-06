@@ -1,27 +1,70 @@
 {
   "name": "embed-react",
-  "version": "1.0.0",
-  "private": true,
+  "version": "2.6.0",
+  "description": "React iframe that resizes to its content, with social media embeds and a hardened server proxy for Next.js",
+  "keywords": ["react", "iframe", "embed", "auto-resize", "nextjs", "social-media", "twitter", "instagram", "facebook", "youtube"],
+  "license": "MIT",
+  "author": "Nguyễn Thành Đạt <ntd4996@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ntd4996/resize-iframe.git"
+  },
+  "homepage": "https://github.com/ntd4996/resize-iframe#readme",
+  "bugs": {
+    "url": "https://github.com/ntd4996/resize-iframe/issues"
+  },
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": { "types": "./dist/index.d.mts", "default": "./dist/index.mjs" },
+      "require": { "types": "./dist/index.d.ts", "default": "./dist/index.js" }
+    },
+    "./server": {
+      "import": { "types": "./dist/server/index.d.mts", "default": "./dist/server/index.mjs" },
+      "require": { "types": "./dist/server/index.d.ts", "default": "./dist/server/index.js" }
+    },
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "server": ["./dist/server/index.d.ts"]
+    }
+  },
+  "files": ["dist"],
+  "workspaces": ["examples/*"],
+  "engines": {
+    "node": ">=18.17"
+  },
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "build": "tsup",
+    "dev": "npm run build && npm run dev --workspace examples/nextjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "check": "npm run typecheck && npm test && npm run build",
+    "prepublishOnly": "npm run check"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0",
+    "react-social-media-embed": "^2.5.0"
   },
   "dependencies": {
-    "cheerio": "^1.0.0-rc.12",
-    "next": "^14.0.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-social-media-embed": "^2.5.18"
+    "cheerio": "^1.2.0"
   },
   "devDependencies": {
-    "@types/cheerio": "^0.22.31",
-    "@types/node": "^20.0.0",
-    "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0",
-    "eslint": "^8.0.0",
-    "eslint-config-next": "^14.0.0",
-    "typescript": "^5.0.0"
+    "@testing-library/react": "^16.3.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "jsdom": "^26.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-social-media-embed": "^2.5.18",
+    "tsup": "^8.5.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.2.0"
   }
 }
