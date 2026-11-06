@@ -324,7 +324,7 @@ function Social() {
   return (
     <section ref={ref} className="social" id="social">
       <div>
-        <h2>Social links use the provider's embed</h2>
+        <h2>Social links need no setup</h2>
         <p className="section-lead">
           SmartEmbed reads the URL and picks the embed, so the link is all you pass. Loading one contacts that provider,
           so here it waits for your click.
