@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Four towers on one rock</title>
+    <style>
+      body { margin: 0; padding: 24px; background: #fff; color: #161513; font: 17px/1.55 Georgia, 'Times New Roman', serif; }
+      main { max-width: 680px; margin: 0 auto; }
+      h1 { margin: 0 0 12px; font-size: 32px; line-height: 1.1; }
+      h2 { margin: 28px 0 8px; font-size: 21px; }
+      p { margin: 0 0 12px; }
+      img { display: block; width: 100%; height: auto; margin: 16px 0 8px; }
+      figcaption { color: #5c5852; font-size: 14px; }
+      figure { margin: 0 0 12px; }
+      .large { font-size: 22px; }
+      [hidden] { display: none; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Four towers on one rock</h1>
+      <p>The Eddystone Rocks lie about twelve miles off Plymouth and are mostly under water at high tide. Four lighthouses have stood on them.</p>
+      <figure>
+        <img src="img/lupton-8296.jpg" width="1400" height="1044" alt="Engraving of the Eddystone Lighthouse in a rough sea" />
+        <figcaption>The Eddystone Lighthouse, engraving by Thomas Goff Lupton.</figcaption>
+      </figure>
+      <section id="early">
+        <h2>Winstanley and Rudyerd</h2>
+        <p>Henry Winstanley finished the first tower in 1698. The Great Storm of 1703 swept it away with him inside. John Rudyerd built the second in timber in 1709, and it burned down in 1755.</p>
+      </section>
+      <h2>Smeaton</h2>
+      <p>John Smeaton's granite tower of 1759 used dovetailed stones and shaped its base after the trunk of an oak. The rock under it eroded, so its upper part was taken down and rebuilt on Plymouth Hoe, where it still stands.</p>
+      <section id="late" hidden>
+        <h2>Douglass</h2>
+        <p>James Douglass built the current tower on a neighbouring reef. It was lit in 1882, stands 49 metres tall and has run without a resident keeper since 1982.</p>
+        <figure>
+          <img src="img/nims.jpg" width="1400" height="1086" alt="Print of the Eddystone Lighthouse by Mary Altha Nims" />
+          <figcaption>Eddystone Lighthouse, print by Mary Altha Nims.</figcaption>
+        </figure>
+      </section>
+    </main>
+    <script>
+      window.addEventListener('message', function (event) {
+        if (event.origin !== location.origin || !event.data || !event.data.demo) return;
+        var on = event.data.on;
+        if (event.data.demo === 'late') document.getElementById('late').hidden = !on;
+        if (event.data.demo === 'collapse') document.getElementById('early').hidden = on;
+        if (event.data.demo === 'type') document.body.classList.toggle('large', on);
+      });
+    </script>
+  </body>
+</html>
