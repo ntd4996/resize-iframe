@@ -6,145 +6,73 @@
     <title>Build a lighthouse</title>
     <style>
       * { box-sizing: border-box; }
-      body { position: relative; margin: 0; overflow-x: hidden; background: #0d2438; color: #fff; font: 500 16px/1.3 system-ui, sans-serif; text-align: center; }
-      .stars { position: absolute; inset: 0; overflow: hidden; }
-      .stars i { position: absolute; width: 2px; height: 2px; border-radius: 50%; background: #dfe8ef; animation: twinkle 3s ease-in-out infinite alternate; }
-      @keyframes twinkle { to { opacity: 0.25; } }
-      .moon { position: absolute; top: 28px; right: 9%; width: 44px; height: 44px; border-radius: 50%; background: #e9e4d2; }
-      .moon::after { content: ''; position: absolute; top: -4px; left: 11px; width: 40px; height: 40px; border-radius: 50%; background: #0d2438; }
-
-      .controls { position: relative; z-index: 3; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; padding: 20px 12px 8px; }
-      button { min-height: 44px; padding: 0 18px; border: 0; background: #ffc933; color: #0a0a0a; font: inherit; cursor: pointer; transition: transform 0.12s, background-color 0.12s; }
-      button:hover { background: #ffd964; }
-      button:active { transform: scale(0.95); }
-      button.quiet { background: #1c3f58; color: #fff; }
-      button.quiet:hover { background: #27526f; }
+      body { --u: min(0.66px, calc(100vw / 860)); margin: 0; overflow-x: hidden; background: #f3ecd9; color: #2a2118; font: 17px/1.35 Georgia, 'Times New Roman', serif; text-align: center; }
+      .controls { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; padding: 20px 12px 16px; }
+      button { min-height: 44px; padding: 0 18px; border: 0; background: #b5402c; color: #fff8ea; font: inherit; cursor: pointer; transition: transform 0.12s, background-color 0.12s; }
+      button:hover { background: #9c3423; }
+      button:active { transform: scale(0.96); }
+      button.quiet { background: #e4d9bd; color: #2a2118; }
+      button.quiet:hover { background: #d8cba9; }
       button:disabled { opacity: 0.45; cursor: default; }
-      output { min-width: 5.5em; font-variant-numeric: tabular-nums; }
-
-      .tower { --w: clamp(120px, 22vw, 210px); position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; padding-top: 20px; }
-      .top { position: relative; width: var(--w); }
-      .top svg, .base svg { position: relative; z-index: 1; display: block; width: 100%; height: auto; overflow: visible; }
-      .beam { position: absolute; top: 34%; height: calc(var(--w) * 1.6); margin-top: calc(var(--w) * -0.8); width: 110vw; background: #ffe9a0; opacity: 0.13; pointer-events: none; animation: sweep 5s ease-in-out infinite alternate; }
-      .beam.left { right: 50%; clip-path: polygon(0 0, 100% 47%, 100% 53%, 0 100%); transform-origin: right center; }
-      .beam.right { left: 50%; clip-path: polygon(0 47%, 100% 0, 100% 100%, 0 53%); transform-origin: left center; animation-direction: alternate-reverse; }
-      @keyframes sweep { from { rotate: -5deg; } to { rotate: 5deg; } }
-      .lens { animation: glow 2.5s ease-in-out infinite alternate; }
-      @keyframes glow { to { fill: #fff6cf; } }
-
-      .shaft { position: relative; width: calc(var(--w) * 0.86); clip-path: polygon(11% 0, 89% 0, 100% 100%, 0 100%); }
-      .shaft::before { content: ''; position: absolute; z-index: 1; inset: 0 0 0 62%; background: #0b1a26; opacity: 0.22; }
-      .shaft::after { content: ''; position: absolute; z-index: 1; inset: 0 auto 0 0; width: 22%; background: #fff; opacity: 0.1; }
-      .floor { position: relative; height: calc(var(--w) * 0.34); background: #f3efe6; }
-      .floor:nth-child(even) { background: #c23a30; }
-      .floor.new { animation: drop 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-      @keyframes drop { from { opacity: 0; } }
-      .floor:nth-child(odd) i { position: absolute; left: 50%; top: 24%; width: 14%; height: 54%; margin-left: -7%; border-radius: 40% 40% 0 0 / 30% 30% 0 0; background: #1b3346; }
-      .floor:nth-child(odd) i::after { content: ''; position: absolute; inset: 14% 18% 12%; border-radius: inherit; background: #ffcf57; }
-
-      .base { position: relative; width: calc(var(--w) * 2.3); margin-bottom: -16px; }
-      .sea { position: relative; z-index: 2; height: 96px; overflow: hidden; background: #0a2f45; }
-      .sea svg { position: absolute; left: 0; width: 200%; height: 28px; animation: drift 9s linear infinite; }
-      .sea .w1 { top: 0; fill: #14506f; }
-      .sea .w2 { top: 12px; fill: #0f3f5a; animation-duration: 6s; animation-direction: reverse; }
-      .sea .w3 { top: 26px; fill: #0a2f45; animation-duration: 12s; }
-      @keyframes drift { to { translate: -50% 0; } }
-      .sea p { position: absolute; left: 0; right: 0; bottom: 14px; margin: 0; color: #a9c6d6; font-weight: 400; font-size: 14px; }
-      @media (max-width: 520px) { .moon { display: none; } }
-      @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+      .tower { display: flex; flex-direction: column; align-items: center; }
+      .tower img { display: block; mix-blend-mode: multiply; }
+      .top { width: calc(370 * var(--u)); height: calc(452 * var(--u)); }
+      .floor { width: calc(370 * var(--u)); height: calc(222 * var(--u)); }
+      .floor.new { animation: settle 0.34s cubic-bezier(0.16, 1, 0.3, 1); }
+      @keyframes settle { from { opacity: 0; } }
+      .base { width: calc(832 * var(--u)); height: calc(466 * var(--u)); }
+      figcaption { padding: 10px 16px 24px; font-style: italic; }
+      figure { margin: 0; }
+      @media (prefers-reduced-motion: reduce) { .floor.new { animation: none; } }
     </style>
   </head>
   <body>
-    <div class="stars" id="stars" aria-hidden="true"><div class="moon"></div></div>
     <div class="controls">
       <button type="button" id="add">Add a floor</button>
       <button type="button" id="remove" class="quiet">Remove one</button>
-      <output id="count"></output>
     </div>
-    <div class="tower">
-      <div class="top" aria-hidden="true">
-        <div class="beam left"></div>
-        <div class="beam right"></div>
-        <svg viewBox="0 0 200 150" role="presentation">
-          <rect x="97" y="0" width="6" height="16" fill="#1b2b38" />
-          <circle cx="100" cy="3" r="5" fill="#c23a30" />
-          <path d="M58 54 C62 26 82 14 100 14 C118 14 138 26 142 54 Z" fill="#c23a30" />
-          <path d="M100 14 C118 14 138 26 142 54 L112 54 C112 34 108 22 100 14 Z" fill="#9c2c24" />
-          <rect x="52" y="50" width="96" height="8" fill="#1b2b38" />
-          <rect class="lens" x="62" y="58" width="76" height="52" fill="#ffc933" />
-          <rect x="62" y="58" width="5" height="52" fill="#1b2b38" />
-          <rect x="88" y="58" width="4" height="52" fill="#1b2b38" />
-          <rect x="108" y="58" width="4" height="52" fill="#1b2b38" />
-          <rect x="133" y="58" width="5" height="52" fill="#1b2b38" />
-          <rect x="62" y="82" width="76" height="3" fill="#1b2b38" />
-          <rect x="30" y="94" width="140" height="4" fill="#1b2b38" />
-          <rect x="30" y="94" width="4" height="22" fill="#1b2b38" />
-          <rect x="52" y="94" width="3" height="22" fill="#1b2b38" />
-          <rect x="145" y="94" width="3" height="22" fill="#1b2b38" />
-          <rect x="166" y="94" width="4" height="22" fill="#1b2b38" />
-          <rect x="24" y="114" width="152" height="10" fill="#1b2b38" />
-          <path d="M34 124 H166 L158 150 H42 Z" fill="#26394a" />
-          <path d="M122 124 H166 L158 150 H122 Z" fill="#1b2b38" />
-        </svg>
+    <figure>
+      <div class="tower">
+        <img class="top" src="img/tower-top.jpg" width="370" height="452" alt="Lantern room of a red and white lighthouse" />
+        <div id="floors"></div>
+        <img class="base" src="img/tower-base.jpg" width="832" height="466" alt="Foot of the lighthouse on dark rocks" />
       </div>
-      <div class="shaft" id="floors"></div>
-      <div class="base" aria-hidden="true">
-        <svg viewBox="0 0 460 150" role="presentation">
-          <path d="M138 0 H322 L336 34 H124 Z" fill="#8f8a7e" />
-          <path d="M262 0 H322 L336 34 H262 Z" fill="#716d63" />
-          <path d="M214 34 V12 C214 3 246 3 246 12 V34 Z" fill="#1b3346" />
-          <path d="M104 34 H356 L388 74 L436 150 H16 L66 80 Z" fill="#3c4247" />
-          <path d="M230 34 H356 L388 74 L436 150 H286 L250 88 Z" fill="#2a2f34" />
-          <path d="M104 34 L66 80 L16 150 H120 L148 84 Z" fill="#4c5358" />
-          <path d="M148 84 L120 150 H286 L250 88 L196 72 Z" fill="#343a3f" />
-        </svg>
-      </div>
-    </div>
-    <div class="sea">
-      <svg class="w1" viewBox="0 0 800 28" preserveAspectRatio="none" aria-hidden="true"><path d="M0 14 Q50 0 100 14 T200 14 T300 14 T400 14 T500 14 T600 14 T700 14 T800 14 V28 H0 Z" /></svg>
-      <svg class="w2" viewBox="0 0 800 28" preserveAspectRatio="none" aria-hidden="true"><path d="M0 14 Q40 2 80 14 T160 14 T240 14 T320 14 T400 14 T480 14 T560 14 T640 14 T720 14 T800 14 V28 H0 Z" /></svg>
-      <svg class="w3" viewBox="0 0 800 28" preserveAspectRatio="none" aria-hidden="true"><path d="M0 14 Q60 4 120 14 T240 14 T360 14 T480 14 T600 14 T720 14 T840 14 V28 H0 Z" /></svg>
-      <p>This page is as tall as the lighthouse in it.</p>
-    </div>
+      <figcaption>Fig. 1. A lighthouse of <span id="count"></span>. The page is as tall as the tower.</figcaption>
+    </figure>
     <script>
       var MAX = 40;
       var floors = document.getElementById('floors');
       var count = document.getElementById('count');
       var add = document.getElementById('add');
       var remove = document.getElementById('remove');
-      var stars = document.getElementById('stars');
-      for (var s = 0; s < 70; s++) {
-        var star = document.createElement('i');
-        star.style.left = ((s * 37) % 100) + '%';
-        star.style.top = ((s * 53) % 100) + '%';
-        star.style.animationDelay = -(s % 6) * 0.5 + 's';
-        stars.appendChild(star);
-      }
       function refresh() {
-        var n = floors.children.length;
-        count.textContent = n + (n === 1 ? ' floor' : ' floors');
-        add.disabled = n >= MAX;
-        remove.disabled = n <= 1;
+        var n = floors.children.length + 2;
+        count.textContent = n + ' floors';
+        add.disabled = floors.children.length >= MAX;
+        remove.disabled = floors.children.length === 0;
       }
       function addFloor(animate) {
         if (floors.children.length >= MAX) return;
-        var floor = document.createElement('div');
+        var floor = document.createElement('img');
         floor.className = animate ? 'floor new' : 'floor';
-        floor.appendChild(document.createElement('i'));
+        floor.src = 'img/tower-floor.jpg';
+        floor.alt = '';
+        floor.width = 370;
+        floor.height = 222;
         floors.insertBefore(floor, floors.firstChild);
         refresh();
       }
       add.onclick = function () { addFloor(true); };
       remove.onclick = function () { floors.removeChild(floors.firstChild); refresh(); };
-      addFloor(false);
+      refresh();
       if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        addFloor(false); addFloor(false); addFloor(false);
+        addFloor(false); addFloor(false);
       } else {
-        var built = 1;
+        var built = 0;
         var timer = setInterval(function () {
           addFloor(true);
-          if (++built >= 5) clearInterval(timer);
-        }, 450);
+          if (++built >= 2) clearInterval(timer);
+        }, 600);
       }
     </script>
   </body>
