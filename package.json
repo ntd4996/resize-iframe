@@ -1,8 +1,19 @@
 {
   "name": "embed-react",
-  "version": "2.6.0",
+  "version": "2.6.1",
   "description": "React iframe that resizes to its content, with social media embeds and a hardened server proxy for Next.js",
-  "keywords": ["react", "iframe", "embed", "auto-resize", "nextjs", "social-media", "twitter", "instagram", "facebook", "youtube"],
+  "keywords": [
+    "react",
+    "iframe",
+    "embed",
+    "auto-resize",
+    "nextjs",
+    "social-media",
+    "twitter",
+    "instagram",
+    "facebook",
+    "youtube"
+  ],
   "license": "MIT",
   "author": "Nguyễn Thành Đạt <ntd4996@gmail.com>",
   "repository": {
@@ -19,22 +30,40 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": { "types": "./dist/index.d.mts", "default": "./dist/index.mjs" },
-      "require": { "types": "./dist/index.d.ts", "default": "./dist/index.js" }
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
     },
     "./server": {
-      "import": { "types": "./dist/server/index.d.mts", "default": "./dist/server/index.mjs" },
-      "require": { "types": "./dist/server/index.d.ts", "default": "./dist/server/index.js" }
+      "import": {
+        "types": "./dist/server/index.d.mts",
+        "default": "./dist/server/index.mjs"
+      },
+      "require": {
+        "types": "./dist/server/index.d.ts",
+        "default": "./dist/server/index.js"
+      }
     },
     "./package.json": "./package.json"
   },
   "typesVersions": {
     "*": {
-      "server": ["./dist/server/index.d.ts"]
+      "server": [
+        "./dist/server/index.d.ts"
+      ]
     }
   },
-  "files": ["dist"],
-  "workspaces": ["examples/*"],
+  "files": [
+    "dist"
+  ],
+  "workspaces": [
+    "examples/*"
+  ],
   "engines": {
     "node": ">=18.17"
   },
